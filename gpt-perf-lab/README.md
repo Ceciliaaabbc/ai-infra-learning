@@ -106,6 +106,38 @@ python report.py                              # 打印结果表格
 | 6 | fused_adamw | fused AdamW |
 | 7–10 | big_batch / ckpt | 增大 batch、activation checkpointing，体会显存和速度的取舍 |
 
+### 每个实验改了代码的哪里
+
+所有实验共用同一份 `model.py` 和 `train.py`。不同的写法都写在代码里，用 `if ... else ...` 分成两条路，由命令行开关决定走哪一条。
+
+实验是**一层层叠加**的：每个实验保留前面所有开关，再多打开一个。表里的“新增开关”只列出比上一步多出来的那一个。每个开关都经过三个位置：**① 在哪一行下达 → ② 在哪一行被读进来 → ③ 在哪一行真正起作用**。
+
+| 实验 | 新增开关 | ① 命令所在行 | ② 读取参数的行 | ③ 真正起作用的行 |
+|---|---|---|---|---|
+| 0 baseline | 无，全部使用默认值 | [run_experiments.sh:35](run_experiments.sh#L35) | — | 见表格下方的说明 |
+| 1 TF32 | `--tf32` | [run_experiments.sh:36](run_experiments.sh#L36) | [train.py:108](train.py#L108) | [train.py:245](train.py#L245) `set_float32_matmul_precision` |
+| 2 bf16 | `--bf16` | [run_experiments.sh:37](run_experiments.sh#L37) | [train.py:109](train.py#L109) | [train.py:261](train.py#L261) `torch.autocast` |
+| 3 compile | `--compile` | [run_experiments.sh:38](run_experiments.sh#L38) | [train.py:110](train.py#L110) | [train.py:301](train.py#L301) `torch.compile` |
+| 4 FlashAttention | `--attn sdpa` | [run_experiments.sh:39](run_experiments.sh#L39) | [train.py:111](train.py#L111) | 经 [train.py:270](train.py#L270) 传入模型，在 [model.py:172](model.py#L172) 判断，[model.py:177](model.py#L177) 执行 `F.scaled_dot_product_attention` |
+| 5 词表补到 50304 | `--vocab_size 50304` | [run_experiments.sh:40](run_experiments.sh#L40) | [train.py:92](train.py#L92) | 经 [train.py:269](train.py#L269) 传入模型，[model.py:286](model.py#L286)（`wte`）和 [model.py:304](model.py#L304)（`lm_head`）的大小随之改变 |
+| 6 fused AdamW | `--adamw fused` | [run_experiments.sh:41](run_experiments.sh#L41) | [train.py:112](train.py#L112) | 经 [train.py:292](train.py#L292) 传入，[model.py:411](model.py#L411) `fused=True` |
+| 7 batch 16 | `--batch_size 16` | [run_experiments.sh:44](run_experiments.sh#L44) | [train.py:88](train.py#L88) | [train.py:274](train.py#L274) `B = args.batch_size`，取数据时用在 [train.py:187](train.py#L187) |
+| 8 checkpointing | `--act_ckpt` | [run_experiments.sh:45](run_experiments.sh#L45) | [train.py:113](train.py#L113) | 经 [train.py:270](train.py#L270) 传入模型，在 [model.py:353](model.py#L353) 判断，[model.py:362](model.py#L362) 执行 `checkpoint(block, x)` |
+| 9 batch 32 | `--batch_size 32` | [run_experiments.sh:46](run_experiments.sh#L46) | [train.py:88](train.py#L88) | 同实验 7 |
+| 10 batch 32 + checkpointing | `--batch_size 32 --act_ckpt` | [run_experiments.sh:47](run_experiments.sh#L47) | [train.py:88](train.py#L88)、[train.py:113](train.py#L113) | 同实验 7 和实验 8 |
+
+**说明：**
+
+1. **实验 0 没有加任何开关**，所以每个判断都走默认那条路：
+   - [train.py:245](train.py#L245)：选 `"highest"`，也就是纯 fp32 计算。
+   - [train.py:261](train.py#L261)：`if` 条件不成立，不开 bf16。
+   - [model.py:172](model.py#L172)：走下面的 `else` 分支，用手写的四步 attention。
+   - [model.py:411](model.py#L411)：用 foreach 版本的优化器。
+2. **从实验 6 开始，命令里出现了 `$OPTS`。** 它在 [run_experiments.sh:24](run_experiments.sh#L24) 定义，就是把前面所有开关加上 `--adamw fused` 打包成一个变量。
+3. **batch 的数字在脚本开头设置。** `$BATCH`（默认 4）在 [run_experiments.sh:14](run_experiments.sh#L14)，`$BIG_BATCH`（默认 16）在 [run_experiments.sh:15](run_experiments.sh#L15)。实验 9 和 10 用的 `$((BIG_BATCH * 2))` 就是 32。
+4. **有些开关要先经过 `train.py`，再交给 `model.py`。** `--attn`、`--act_ckpt`、`--vocab_size` 这三个，是在 [train.py:269](train.py#L269) 写进模型的规格表 `GPTConfig`，模型创建之后再按规格表上的值选择走哪条路。
+5. 行号对应的是当前版本的代码。以后改代码导致行号变化时，可以用表里写的关键代码（比如 `torch.compile`）在文件里搜索。
+
 ## 4. 指标说明
 
 | 指标 | 含义 |
