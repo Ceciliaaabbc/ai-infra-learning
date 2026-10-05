@@ -33,6 +33,8 @@
 
 **第 3 步：[train.py](gpt-perf-lab/train.py)，按执行顺序读 `main()`**
 
+读代码之前，先看 [train.py 详解](gpt-perf-lab/docs/train_explained.md) 里的三张流程图，以及每个部分“是什么、干什么用”。
+
 1. 设置精度
 2. 创建模型，然后 compile
 3. `train_step`：**重点**。它就是 `learn/03` 里的训练五步，多加了混合精度、梯度累积和梯度裁剪
