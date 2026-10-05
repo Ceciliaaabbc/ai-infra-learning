@@ -21,6 +21,8 @@
 
 **第 2 步：[model.py](gpt-perf-lab/model.py)，从上往下读**
 
+读代码之前，先看 [model.py 详解](gpt-perf-lab/docs/model_explained.md) 里的三张流程图，以及每个部分“是什么、干什么用”。
+
 1. `GPTConfig`：先看模型有哪些参数（层数、维度、词表大小）
 2. `GPT.forward`：先看整条数据流，从 token 到 loss
 3. `Block`：每一层由 attention 和 MLP 组成

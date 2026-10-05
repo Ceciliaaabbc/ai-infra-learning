@@ -40,6 +40,8 @@ gpt-perf-lab/
 ├── prepare_data.py         # 下载数据并转成 token
 ├── run_experiments.sh      # 一键跑完整个优化阶梯
 ├── report.py               # 把 results.csv 打印成 Markdown 表格
+├── docs/
+│   └── model_explained.md  # model.py 详解：流程图、每个部分是什么、为什么这样设计
 └── results/                # 各显卡的实验结果和分析
     └── rtx4090/
 ```

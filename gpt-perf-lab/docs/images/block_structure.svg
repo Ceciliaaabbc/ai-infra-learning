@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="490" viewBox="0 0 680 490" role="img">
+<title>一个 Transformer Block 的内部结构</title>
+<desc>输入 x 沿残差主路向下，两次分出支路：先 LayerNorm 再因果自注意力，结果加回主路；再 LayerNorm 再 MLP，结果再加回主路，输出形状不变。</desc>
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;text-anchor:middle;dominant-baseline:central}
+.th{font-size:14px;font-weight:600}.ts{font-size:12px}
+rect,circle{stroke-width:1}
+.arr{stroke:#888780;stroke-width:1.5;fill:none}
+.g-box rect{fill:#FFFFFF;stroke:#B4B2A9}.g-box .th{fill:#2C2C2A}.g-box .ts{fill:#5F5E5A}
+.g-gray rect,.g-gray circle{fill:#F1EFE8;stroke:#5F5E5A}.g-gray .th{fill:#444441}.g-gray .ts{fill:#5F5E5A}
+.g-purple rect{fill:#EEEDFE;stroke:#534AB7}.g-purple .th{fill:#3C3489}.g-purple .ts{fill:#534AB7}
+.g-teal rect{fill:#E1F5EE;stroke:#0F6E56}.g-teal .th{fill:#085041}.g-teal .ts{fill:#0F6E56}
+</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="680" height="490" rx="12" fill="#FFFFFF"/>
+<g class="g-box"><rect x="80" y="30" width="140" height="56" rx="8"/><text class="th" x="150" y="48">输入 x</text><text class="ts" x="150" y="68">(B, T, C)</text></g>
+<line x1="150" y1="86" x2="150" y2="192" class="arr" marker-end="url(#a)"/>
+<line x1="150" y1="138" x2="248" y2="138" class="arr" marker-end="url(#a)"/>
+<g class="g-gray"><rect x="250" y="110" width="140" height="56" rx="8"/><text class="th" x="320" y="128">LayerNorm</text><text class="ts" x="320" y="148">先归一化</text></g>
+<line x1="390" y1="138" x2="438" y2="138" class="arr" marker-end="url(#a)"/>
+<g class="g-teal"><rect x="440" y="110" width="200" height="56" rx="8"/><text class="th" x="540" y="128">因果自注意力</text><text class="ts" x="540" y="148">token 之间交流</text></g>
+<path d="M540 166 L540 210 L168 210" class="arr" marker-end="url(#a)"/>
+<g class="g-gray"><circle cx="150" cy="210" r="16"/><text class="th" x="150" y="210">+</text></g>
+<line x1="150" y1="226" x2="150" y2="332" class="arr" marker-end="url(#a)"/>
+<line x1="150" y1="278" x2="248" y2="278" class="arr" marker-end="url(#a)"/>
+<g class="g-gray"><rect x="250" y="250" width="140" height="56" rx="8"/><text class="th" x="320" y="268">LayerNorm</text><text class="ts" x="320" y="288">先归一化</text></g>
+<line x1="390" y1="278" x2="438" y2="278" class="arr" marker-end="url(#a)"/>
+<g class="g-purple"><rect x="440" y="250" width="200" height="56" rx="8"/><text class="th" x="540" y="268">MLP</text><text class="ts" x="540" y="288">每个 token 各自加工</text></g>
+<path d="M540 306 L540 350 L168 350" class="arr" marker-end="url(#a)"/>
+<g class="g-gray"><circle cx="150" cy="350" r="16"/><text class="th" x="150" y="350">+</text></g>
+<line x1="150" y1="366" x2="150" y2="398" class="arr" marker-end="url(#a)"/>
+<g class="g-box"><rect x="80" y="400" width="140" height="56" rx="8"/><text class="th" x="150" y="418">输出 x</text><text class="ts" x="150" y="438">(B, T, C)</text></g>
+</svg>
