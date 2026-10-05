@@ -1,0 +1,132 @@
+# GPT 单卡性能实验（项目 0）
+
+**目标**：在单张 GPU 上训练 GPT-2 (124M)，从纯 fp32 的 baseline 出发，逐项加上优化，
+**用数据**说明每一项优化让速度提升了多少、显存省了多少、为什么有效。
+
+参考：Karpathy 的视频 *Let's reproduce GPT-2 (124M)* 和仓库 `build-nanogpt`。
+
+## 目录结构
+
+```
+gpt-perf-lab/
+├── learn/                  # 前置知识：可直接运行的小例子（CPU 就能跑）
+│   ├── 01_tensor.py        #   tensor、shape、dtype、矩阵乘法
+│   ├── 02_autograd.py      #   自动求导、计算图、梯度累加
+│   ├── 03_train_loop.py    #   完整的训练循环
+│   └── 04_attention.py     #   attention 一步一步算
+├── check_gpu.py            # GPU 环境自检：到服务器上第一个运行它
+├── model.py                # GPT-2 模型（带 naive / sdpa attention 和 activation checkpointing 开关）
+├── perf.py                 # 测量工具：tokens/s、MFU、显存估算
+├── train.py                # 训练 + 测量，结果追加到 results.csv
+├── prepare_data.py         # 下载数据并转成 token
+├── run_experiments.sh      # 一键跑完整个优化阶梯
+└── report.py               # 把 results.csv 打印成 Markdown 表格
+```
+
+## 1. 先学前置知识
+
+```bash
+python learn/01_tensor.py
+python learn/02_autograd.py
+python learn/03_train_loop.py
+python learn/04_attention.py
+```
+
+把每个脚本的输出和代码对照着看懂，再去读 `model.py`。
+
+## 2. 环境
+
+**本地冒烟测试**（Mac / 没有 GPU 的电脑也能跑，只用来确认代码能运行）：
+
+```bash
+pip install -r requirements.txt
+python train.py --model tiny --data synthetic --steps 20 --skip_steps 5
+```
+
+**GPU 服务器**（比如 AutoDL 租一张 4090 或 A100，镜像选 PyTorch 2.x）：
+
+```bash
+pip install -r requirements.txt
+python check_gpu.py             # 自检：显存统计、bf16、TF32、FlashAttention、fused AdamW、实测算力
+python train.py --model tiny --data synthetic --steps 20 --skip_steps 5   # 冒烟测试
+python prepare_data.py          # 下载 tiny shakespeare（约 1MB）
+```
+
+用完记得在控制台**关机**，按量计费的实例开着就一直收费。
+
+如果在 AutoDL 上下载 GitHub 的文件失败，先执行 `source /etc/network_turbo` 打开学术加速；
+或者直接用 `--data synthetic`（随机 token），测速度不受影响。
+
+## 3. 跑实验
+
+**跑单个实验**：
+
+```bash
+python train.py --tag my_baseline                               # 纯 fp32 baseline
+python train.py --tf32 --bf16 --compile --attn sdpa --tag fast  # 打开几项优化
+```
+
+**跑完整的优化阶梯**（约 15–20 分钟）：
+
+```bash
+bash run_experiments.sh                       # 默认 B=4，适合 24GB 显卡
+BATCH=8 BIG_BATCH=32 bash run_experiments.sh  # 80GB 显卡可以调大
+python report.py                              # 打印结果表格
+```
+
+| # | 实验 | 加了什么 |
+|---|---|---|
+| 0 | baseline_fp32 | 什么都不加 |
+| 1 | tf32 | fp32 矩阵乘法改用 TF32 Tensor Core |
+| 2 | bf16 | bf16 混合精度 |
+| 3 | compile | `torch.compile` |
+| 4 | flash_attn | `F.scaled_dot_product_attention`（FlashAttention） |
+| 5 | vocab_50304 | 词表从 50257 补齐到 50304 |
+| 6 | fused_adamw | fused AdamW |
+| 7–10 | big_batch / ckpt | 增大 batch、activation checkpointing，体会显存和速度的取舍 |
+
+## 4. 指标说明
+
+| 指标 | 含义 |
+|---|---|
+| **tokens/s** | 每秒训练多少个 token。跳过前 `--skip_steps` 步，因为编译、预热会让前几步特别慢 |
+| **MFU** | `tokens/s × 每 token FLOPs ÷ 显卡峰值 FLOPs`，表示用上了显卡理论算力的百分之几。公式见 `perf.py` |
+| **峰值显存** | `torch.cuda.max_memory_allocated()`。减去“参数+梯度+优化器状态”（每参数 16 字节），剩下的主要是激活值 |
+| **loss** | 最后 10 步的平均。用来确认优化**没有改变训练结果**（实验 2 之后数值会有细微差别，属于正常的精度差异） |
+
+如果显卡不在 `perf.py` 的列表里，用 `--peak_tflops` 手动指定 bf16 峰值算力。
+
+## 5. Profiling：时间都花在哪了
+
+```bash
+python train.py --tf32 --bf16 --attn sdpa --profile --tag prof_sdpa
+```
+
+终端会打印耗时最多的 15 个算子，同时导出 `traces/prof_sdpa.json`，
+用 https://ui.perfetto.dev 打开可以看到 CPU 和 GPU 的时间线。
+
+## 6. 练习清单
+
+- [ ] 跑完优化阶梯，把 `report.py` 的表格贴进自己的博客
+- [ ] **手算显存**：124M 参数 × 16 字节 ≈ ? GB；和实测峰值相差多少？差的部分是什么？
+- [ ] 对比实验 3 和 4 的峰值显存：FlashAttention 省下了多少？和 `learn/04_attention.py` 的 T² 估算对得上吗？
+- [ ] 对比实验 7 和 8：activation checkpointing 让速度慢了多少、显存省了多少？
+- [ ] 实验 9 是不是 OOM 了？实验 10 为什么能跑？
+- [ ] 用 profile 对比 naive 和 sdpa 的 attention：哪些算子消失了？
+- [ ] 改 `--seq_len`（256 / 512 / 1024），看 naive attention 的显存怎么变化
+
+**思考题**（这些也是面试常见题）：
+
+1. bf16 为什么比 fp32 快？它和 fp16 有什么区别？可能带来什么风险？
+2. `torch.compile` 到底做了什么？为什么前几步特别慢？
+3. FlashAttention 为什么能省显存，而且还更快？
+4. 词表从 50257 改成 50304 为什么会变快？
+5. MFU 为什么很难达到 100%？你的瓶颈在哪里？
+
+## 7. 下一步
+
+做完这个项目后，在同一份代码上继续：
+
+1. **项目 2**：把训练扩展到多卡，手写 DDP → ZeRO → Tensor Parallel
+2. **项目 1**：针对 profiling 发现的瓶颈，用 Triton 写 fused 算子替换掉
+3. **项目 3**：把模型换成 DiT、数据换成视频，加上序列并行

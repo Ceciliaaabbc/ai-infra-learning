@@ -1,0 +1,5 @@
+torch>=2.1
+numpy
+tiktoken
+# 可选：用 FineWeb-Edu 数据时才需要
+# datasets
