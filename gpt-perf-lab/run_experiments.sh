@@ -4,6 +4,8 @@
 # 用法：
 #   bash run_experiments.sh                          # 默认 gpt2 (124M)，B=4，T=1024，适合 24GB 显卡
 #   BATCH=8 BIG_BATCH=32 bash run_experiments.sh     # A100 80G 等大显存卡可以调大
+#   BIG_BATCH=8 bash run_experiments.sh              # 16GB 显存的卡
+#   PEAK_TFLOPS=<bf16 峰值> bash run_experiments.sh  # 显卡不在 perf.py 的峰值表里时，手动指定才能算 MFU
 #   DATA=synthetic bash run_experiments.sh           # 不下载数据，只测速度
 # 跑完后执行：python report.py
 
@@ -13,8 +15,12 @@ BATCH=${BATCH:-4}
 BIG_BATCH=${BIG_BATCH:-16}
 STEPS=${STEPS:-50}
 RESULTS=${RESULTS:-results.csv}
+PEAK_TFLOPS=${PEAK_TFLOPS:-}
 
 COMMON="--model $MODEL --data $DATA --steps $STEPS --skip_steps 10 --results $RESULTS"
+if [ -n "$PEAK_TFLOPS" ]; then
+  COMMON="$COMMON --peak_tflops $PEAK_TFLOPS"
+fi
 OPTS="--tf32 --bf16 --compile --attn sdpa --vocab_size 50304 --adamw fused"
 
 run() {
