@@ -5,6 +5,25 @@
 
 参考：Karpathy 的视频 *Let's reproduce GPT-2 (124M)* 和仓库 `build-nanogpt`。
 
+## 实验结果（RTX 4090）
+
+**吞吐提升 5.05 倍（23,653 → 119,443 tokens/s），MFU 从 12.3% 提升到 61.9%，同 batch 下峰值显存降低 54%。**
+
+| 实验 | tokens/s | 比 baseline | MFU | 峰值显存 (GB) |
+|---|---:|---:|---:|---:|
+| fp32 baseline（B=4） | 23,653 | 1.00x | 12.3% | 9.03 |
+| + TF32 | 27,973 | 1.18x | 14.5% | 9.03 |
+| + bf16 | 35,930 | 1.52x | 18.6% | 8.63 |
+| + torch.compile | 65,584 | 2.77x | 34.0% | 6.43 |
+| + FlashAttention | 84,502 | 3.57x | 43.8% | 4.16 |
+| + 词表补齐到 50304 | 83,888 | 3.55x | 43.5% | 4.17 |
+| + fused AdamW | 96,784 | 4.09x | 50.2% | 4.17 |
+| batch 加到 16 | **119,443** | **5.05x** | **61.9%** | 11.47 |
+
+**核心发现**：用 Amdahl 定律分析 TF32 的结果，baseline 中矩阵乘法只占约 40% 的时间，瓶颈在显存读写。所以提升最大的是减少显存读写的 compile（×1.83）和 FlashAttention（×1.29）。
+
+完整分析（含 activation checkpointing 的取舍、OOM 原因、词表补齐为什么无效等）见 [results/rtx4090/README.md](results/rtx4090/README.md)。
+
 ## 目录结构
 
 ```
@@ -20,7 +39,9 @@ gpt-perf-lab/
 ├── train.py                # 训练 + 测量，结果追加到 results.csv
 ├── prepare_data.py         # 下载数据并转成 token
 ├── run_experiments.sh      # 一键跑完整个优化阶梯
-└── report.py               # 把 results.csv 打印成 Markdown 表格
+├── report.py               # 把 results.csv 打印成 Markdown 表格
+└── results/                # 各显卡的实验结果和分析
+    └── rtx4090/
 ```
 
 ## 1. 先学前置知识

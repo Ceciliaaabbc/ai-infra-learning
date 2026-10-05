@@ -54,6 +54,15 @@ GPT-2 模型（精简版），结构与 OpenAI GPT-2 完全一致。
                        反向时重新算一遍。用大约多 1/3 的计算量，换取大量显存
 """
 
+
+# model.py：GPT-2 模型本身
+# 输入：一批 token 编号，形状 (B, T)
+# 输出：每个位置对“下一个词”的预测，形状 (B, T, V)，再加上一个 loss，表示预测得有多准
+# 内部结构：把词变成向量 → 经过 12 层 Block（每层先做 attention 让 token 之间交流，再过 MLP 让每个 token 各自加工）→ 输出层给词表里每个词打分
+# 它不负责训练，只定义“给一个输入，怎么算出输出”
+# 里面还有 3 个性能开关：attention 用哪种实现、要不要开 activation checkpointing、优化器用哪种实现
+
+
 import math
 from dataclasses import dataclass
 

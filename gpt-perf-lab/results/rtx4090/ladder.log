@@ -1,0 +1,289 @@
+nohup: ignoring input
+
+################ 0_baseline_fp32 ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.4M  层数 12  隐藏维度 768  词表 50257
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=False bf16=False compile=False attn=naive adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9488 | lr 1.20e-04 | norm 27.84 |    615.6 ms |      6653 tok/s | MFU   3.4%  (预热，不计入统计)
+step    5 | loss 8.2619 | lr 6.00e-04 | norm 6.55 |    172.1 ms |     23803 tok/s | MFU  12.3%  (预热，不计入统计)
+step   10 | loss 6.8413 | lr 5.84e-04 | norm 1.33 |    173.0 ms |     23677 tok/s | MFU  12.3%
+step   15 | loss 6.6235 | lr 5.37e-04 | norm 1.29 |    172.7 ms |     23719 tok/s | MFU  12.3%
+step   20 | loss 6.3058 | lr 4.65e-04 | norm 1.04 |    172.7 ms |     23723 tok/s | MFU  12.3%
+step   25 | loss 6.2794 | lr 3.77e-04 | norm 0.90 |    173.2 ms |     23649 tok/s | MFU  12.3%
+step   30 | loss 6.1872 | lr 2.83e-04 | norm 0.91 |    173.0 ms |     23682 tok/s | MFU  12.3%
+step   35 | loss 6.1832 | lr 1.95e-04 | norm 0.98 |    173.9 ms |     23555 tok/s | MFU  12.2%
+step   40 | loss 6.2557 | lr 1.23e-04 | norm 0.77 |    172.7 ms |     23711 tok/s | MFU  12.3%
+step   45 | loss 6.3151 | lr 7.63e-05 | norm 0.84 |    173.3 ms |     23638 tok/s | MFU  12.3%
+step   49 | loss 6.0471 | lr 6.07e-05 | norm 0.76 |    173.4 ms |     23624 tok/s | MFU  12.2%
+------------------------------------------------------------------------
+吞吐        23,653 tokens/s  （第 10 步之后的平均）
+MFU         12.3%
+峰值显存    9.03 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1279  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 1_tf32 ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.4M  层数 12  隐藏维度 768  词表 50257
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=False compile=False attn=naive adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9487 | lr 1.20e-04 | norm 27.84 |    553.7 ms |      7397 tok/s | MFU   3.8%  (预热，不计入统计)
+step    5 | loss 8.2596 | lr 6.00e-04 | norm 6.51 |    146.3 ms |     27989 tok/s | MFU  14.5%  (预热，不计入统计)
+step   10 | loss 6.8385 | lr 5.84e-04 | norm 1.32 |    145.9 ms |     28071 tok/s | MFU  14.5%
+step   15 | loss 6.6226 | lr 5.37e-04 | norm 1.29 |    146.3 ms |     28006 tok/s | MFU  14.5%
+step   20 | loss 6.3021 | lr 4.65e-04 | norm 1.08 |    145.8 ms |     28102 tok/s | MFU  14.6%
+step   25 | loss 6.2733 | lr 3.77e-04 | norm 1.04 |    146.1 ms |     28035 tok/s | MFU  14.5%
+step   30 | loss 6.1723 | lr 2.83e-04 | norm 0.86 |    146.4 ms |     27975 tok/s | MFU  14.5%
+step   35 | loss 6.1676 | lr 1.95e-04 | norm 0.97 |    146.3 ms |     27989 tok/s | MFU  14.5%
+step   40 | loss 6.2469 | lr 1.23e-04 | norm 0.79 |    146.6 ms |     27948 tok/s | MFU  14.5%
+step   45 | loss 6.3039 | lr 7.63e-05 | norm 0.84 |    146.0 ms |     28050 tok/s | MFU  14.5%
+step   49 | loss 6.0317 | lr 6.07e-05 | norm 0.74 |    146.0 ms |     28062 tok/s | MFU  14.5%
+------------------------------------------------------------------------
+吞吐        27,973 tokens/s  （第 10 步之后的平均）
+MFU         14.5%
+峰值显存    9.03 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1151  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 2_bf16 ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.4M  层数 12  隐藏维度 768  词表 50257
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=True compile=False attn=naive adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9493 | lr 1.20e-04 | norm 27.83 |    593.2 ms |      6904 tok/s | MFU   3.6%  (预热，不计入统计)
+step    5 | loss 8.2745 | lr 6.00e-04 | norm 6.78 |    113.6 ms |     36059 tok/s | MFU  18.7%  (预热，不计入统计)
+step   10 | loss 6.8573 | lr 5.84e-04 | norm 1.50 |    115.2 ms |     35553 tok/s | MFU  18.4%
+step   15 | loss 6.6320 | lr 5.37e-04 | norm 1.23 |    113.6 ms |     36043 tok/s | MFU  18.7%
+step   20 | loss 6.3316 | lr 4.65e-04 | norm 1.13 |    113.8 ms |     36005 tok/s | MFU  18.7%
+step   25 | loss 6.2924 | lr 3.77e-04 | norm 1.55 |    114.2 ms |     35866 tok/s | MFU  18.6%
+step   30 | loss 6.2150 | lr 2.83e-04 | norm 0.85 |    114.1 ms |     35890 tok/s | MFU  18.6%
+step   35 | loss 6.1963 | lr 1.95e-04 | norm 0.73 |    113.8 ms |     35982 tok/s | MFU  18.6%
+step   40 | loss 6.2867 | lr 1.23e-04 | norm 0.80 |    113.9 ms |     35953 tok/s | MFU  18.6%
+step   45 | loss 6.3424 | lr 7.63e-05 | norm 0.87 |    113.9 ms |     35971 tok/s | MFU  18.6%
+step   49 | loss 6.0755 | lr 6.07e-05 | norm 0.74 |    113.8 ms |     35988 tok/s | MFU  18.7%
+------------------------------------------------------------------------
+吞吐        35,930 tokens/s  （第 10 步之后的平均）
+MFU         18.6%
+峰值显存    8.63 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1566  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 3_compile ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.4M  层数 12  隐藏维度 768  词表 50257
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=True compile=True attn=naive adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9491 | lr 1.20e-04 | norm 27.83 |  23420.6 ms |       175 tok/s | MFU   0.1%  (预热，不计入统计)
+step    5 | loss 8.2786 | lr 6.00e-04 | norm 6.85 |     62.6 ms |     65479 tok/s | MFU  33.9%  (预热，不计入统计)
+step   10 | loss 6.8594 | lr 5.84e-04 | norm 1.53 |     62.3 ms |     65695 tok/s | MFU  34.0%
+step   15 | loss 6.6310 | lr 5.37e-04 | norm 1.24 |     62.7 ms |     65346 tok/s | MFU  33.9%
+step   20 | loss 6.3432 | lr 4.65e-04 | norm 1.25 |     62.6 ms |     65393 tok/s | MFU  33.9%
+step   25 | loss 6.3057 | lr 3.77e-04 | norm 0.99 |     62.3 ms |     65775 tok/s | MFU  34.1%
+step   30 | loss 6.2051 | lr 2.83e-04 | norm 0.92 |     62.3 ms |     65742 tok/s | MFU  34.1%
+step   35 | loss 6.1897 | lr 1.95e-04 | norm 0.85 |     62.4 ms |     65644 tok/s | MFU  34.0%
+step   40 | loss 6.2695 | lr 1.23e-04 | norm 0.83 |     62.2 ms |     65873 tok/s | MFU  34.1%
+step   45 | loss 6.3224 | lr 7.63e-05 | norm 0.84 |     62.3 ms |     65699 tok/s | MFU  34.1%
+step   49 | loss 6.0515 | lr 6.07e-05 | norm 0.74 |     62.4 ms |     65655 tok/s | MFU  34.0%
+------------------------------------------------------------------------
+吞吐        65,584 tokens/s  （第 10 步之后的平均）
+MFU         34.0%
+峰值显存    6.43 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1351  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 4_flash_attn ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.4M  层数 12  隐藏维度 768  词表 50257
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9491 | lr 1.20e-04 | norm 27.83 |  17595.1 ms |       233 tok/s | MFU   0.1%  (预热，不计入统计)
+step    5 | loss 8.2791 | lr 6.00e-04 | norm 6.85 |     48.0 ms |     85400 tok/s | MFU  44.3%  (预热，不计入统计)
+step   10 | loss 6.8598 | lr 5.84e-04 | norm 1.54 |     48.3 ms |     84716 tok/s | MFU  43.9%
+step   15 | loss 6.6313 | lr 5.37e-04 | norm 1.24 |     48.2 ms |     84985 tok/s | MFU  44.0%
+step   20 | loss 6.3396 | lr 4.65e-04 | norm 1.28 |     48.6 ms |     84305 tok/s | MFU  43.7%
+step   25 | loss 6.3003 | lr 3.77e-04 | norm 0.93 |     48.8 ms |     84008 tok/s | MFU  43.5%
+step   30 | loss 6.2044 | lr 2.83e-04 | norm 0.89 |     48.4 ms |     84553 tok/s | MFU  43.8%
+step   35 | loss 6.1927 | lr 1.95e-04 | norm 0.96 |     48.5 ms |     84398 tok/s | MFU  43.7%
+step   40 | loss 6.2844 | lr 1.23e-04 | norm 0.98 |     48.7 ms |     84177 tok/s | MFU  43.6%
+step   45 | loss 6.3301 | lr 7.63e-05 | norm 0.85 |     48.4 ms |     84609 tok/s | MFU  43.9%
+step   49 | loss 6.0585 | lr 6.07e-05 | norm 0.73 |     48.2 ms |     84970 tok/s | MFU  44.0%
+------------------------------------------------------------------------
+吞吐        84,502 tokens/s  （第 10 步之后的平均）
+MFU         43.8%
+峰值显存    4.16 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1441  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 5_vocab_50304 ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=foreach act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9426 | lr 1.20e-04 | norm 27.66 |  17350.4 ms |       236 tok/s | MFU   0.1%  (预热，不计入统计)
+step    5 | loss 8.1069 | lr 6.00e-04 | norm 2.55 |     51.5 ms |     79602 tok/s | MFU  41.3%  (预热，不计入统计)
+step   10 | loss 6.6862 | lr 5.84e-04 | norm 1.01 |     48.3 ms |     84772 tok/s | MFU  43.9%
+step   15 | loss 6.5991 | lr 5.37e-04 | norm 1.24 |     48.4 ms |     84646 tok/s | MFU  43.9%
+step   20 | loss 6.2657 | lr 4.65e-04 | norm 0.96 |     48.5 ms |     84464 tok/s | MFU  43.8%
+step   25 | loss 6.2540 | lr 3.77e-04 | norm 1.02 |     48.5 ms |     84505 tok/s | MFU  43.8%
+step   30 | loss 6.1555 | lr 2.83e-04 | norm 0.82 |     48.2 ms |     85012 tok/s | MFU  44.1%
+step   35 | loss 6.1554 | lr 1.95e-04 | norm 1.09 |     48.2 ms |     84989 tok/s | MFU  44.1%
+step   40 | loss 6.2248 | lr 1.23e-04 | norm 0.79 |     48.2 ms |     85004 tok/s | MFU  44.1%
+step   45 | loss 6.2969 | lr 7.63e-05 | norm 0.87 |     48.2 ms |     84903 tok/s | MFU  44.0%
+step   49 | loss 6.0282 | lr 6.07e-05 | norm 0.69 |     48.3 ms |     84836 tok/s | MFU  44.0%
+------------------------------------------------------------------------
+吞吐        83,888 tokens/s  （第 10 步之后的平均）
+MFU         43.5%
+峰值显存    4.17 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1081  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 6_fused_adamw ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=4  T=1024  grad_accum=1  → 每步 4,096 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=fused act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9426 | lr 1.20e-04 | norm 27.66 |   2085.6 ms |      1964 tok/s | MFU   1.0%  (预热，不计入统计)
+step    5 | loss 8.1069 | lr 6.00e-04 | norm 2.55 |     41.8 ms |     98034 tok/s | MFU  50.8%  (预热，不计入统计)
+step   10 | loss 6.6861 | lr 5.84e-04 | norm 1.00 |     41.8 ms |     97998 tok/s | MFU  50.8%
+step   15 | loss 6.5997 | lr 5.37e-04 | norm 1.20 |     41.6 ms |     98524 tok/s | MFU  51.1%
+step   20 | loss 6.2620 | lr 4.65e-04 | norm 1.12 |     41.8 ms |     98103 tok/s | MFU  50.9%
+step   25 | loss 6.2535 | lr 3.77e-04 | norm 1.13 |     41.9 ms |     97669 tok/s | MFU  50.6%
+step   30 | loss 6.1543 | lr 2.83e-04 | norm 0.83 |     42.5 ms |     96345 tok/s | MFU  49.9%
+step   35 | loss 6.1521 | lr 1.95e-04 | norm 0.94 |     41.9 ms |     97642 tok/s | MFU  50.6%
+step   40 | loss 6.2245 | lr 1.23e-04 | norm 0.77 |     41.9 ms |     97667 tok/s | MFU  50.6%
+step   45 | loss 6.2936 | lr 7.63e-05 | norm 0.84 |     45.7 ms |     89613 tok/s | MFU  46.5%
+step   49 | loss 6.0271 | lr 6.07e-05 | norm 0.69 |     41.9 ms |     97723 tok/s | MFU  50.7%
+------------------------------------------------------------------------
+吞吐        96,784 tokens/s  （第 10 步之后的平均）
+MFU         50.2%
+峰值显存    4.17 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   6.1060  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 7_big_batch ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=16  T=1024  grad_accum=1  → 每步 16,384 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=fused act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9373 | lr 1.20e-04 | norm 26.66 |  18479.6 ms |       887 tok/s | MFU   0.5%  (预热，不计入统计)
+step    5 | loss 8.1870 | lr 6.00e-04 | norm 5.97 |    137.2 ms |    119427 tok/s | MFU  61.9%  (预热，不计入统计)
+step   10 | loss 6.6156 | lr 5.84e-04 | norm 1.22 |    136.1 ms |    120358 tok/s | MFU  62.4%
+step   15 | loss 6.2985 | lr 5.37e-04 | norm 1.93 |    136.6 ms |    119948 tok/s | MFU  62.2%
+step   20 | loss 6.2262 | lr 4.65e-04 | norm 1.22 |    137.6 ms |    119055 tok/s | MFU  61.7%
+step   25 | loss 6.1086 | lr 3.77e-04 | norm 0.64 |    137.7 ms |    118948 tok/s | MFU  61.7%
+step   30 | loss 6.0070 | lr 2.83e-04 | norm 0.72 |    136.3 ms |    120234 tok/s | MFU  62.3%
+step   35 | loss 6.0096 | lr 1.95e-04 | norm 0.47 |    137.8 ms |    118877 tok/s | MFU  61.6%
+step   40 | loss 5.9856 | lr 1.23e-04 | norm 0.44 |    138.3 ms |    118435 tok/s | MFU  61.4%
+step   45 | loss 5.9897 | lr 7.63e-05 | norm 0.35 |    136.6 ms |    119963 tok/s | MFU  62.2%
+step   49 | loss 5.9437 | lr 6.07e-05 | norm 0.48 |    137.8 ms |    118904 tok/s | MFU  61.6%
+------------------------------------------------------------------------
+吞吐        119,443 tokens/s  （第 10 步之后的平均）
+MFU         61.9%
+峰值显存    11.47 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   5.9733  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 8_big_batch_ckpt ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=16  T=1024  grad_accum=1  → 每步 16,384 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=fused act_ckpt=True
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9373 | lr 1.20e-04 | norm 26.66 |  21192.6 ms |       773 tok/s | MFU   0.4%  (预热，不计入统计)
+step    5 | loss 8.1889 | lr 6.00e-04 | norm 6.02 |    154.5 ms |    106034 tok/s | MFU  55.0%  (预热，不计入统计)
+step   10 | loss 6.6163 | lr 5.84e-04 | norm 1.23 |    156.1 ms |    104948 tok/s | MFU  54.4%
+step   15 | loss 6.3031 | lr 5.37e-04 | norm 2.01 |    156.3 ms |    104799 tok/s | MFU  54.3%
+step   20 | loss 6.2391 | lr 4.65e-04 | norm 1.07 |    155.2 ms |    105578 tok/s | MFU  54.7%
+step   25 | loss 6.1262 | lr 3.77e-04 | norm 1.03 |    156.1 ms |    104988 tok/s | MFU  54.4%
+step   30 | loss 6.0071 | lr 2.83e-04 | norm 0.57 |    156.6 ms |    104657 tok/s | MFU  54.3%
+step   35 | loss 6.0160 | lr 1.95e-04 | norm 0.59 |    157.4 ms |    104068 tok/s | MFU  54.0%
+step   40 | loss 5.9936 | lr 1.23e-04 | norm 0.55 |    156.0 ms |    105018 tok/s | MFU  54.4%
+step   45 | loss 5.9985 | lr 7.63e-05 | norm 0.42 |    155.6 ms |    105308 tok/s | MFU  54.6%
+step   49 | loss 5.9493 | lr 6.07e-05 | norm 0.50 |    157.0 ms |    104353 tok/s | MFU  54.1%
+------------------------------------------------------------------------
+吞吐        104,957 tokens/s  （第 10 步之后的平均）
+MFU         54.4%
+峰值显存    6.75 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   5.9803  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+################ 9_bigger_batch ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=32  T=1024  grad_accum=1  → 每步 32,768 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=fused act_ckpt=False
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9293 | lr 1.20e-04 | norm 27.11 |  17932.1 ms |      1827 tok/s | MFU   0.9%  (预热，不计入统计)
+
+[OOM] 显存不够。可以减小 --batch_size，或打开 --bf16 / --attn sdpa / --act_ckpt
+[9_bigger_batch] 运行失败（可能是 OOM），继续下一个实验
+
+################ 10_bigger_batch_ckpt ################
+========================================================================
+设备        NVIDIA GeForce RTX 4090  (bf16 峰值 165 TFLOPS)
+模型        gpt2  参数 124.5M  层数 12  隐藏维度 768  词表 50304
+批次        B=32  T=1024  grad_accum=1  → 每步 32,768 tokens
+开关        tf32=True bf16=True compile=True attn=sdpa adamw=fused act_ckpt=True
+估算        每 token 0.86 GFLOPs；参数+梯度+优化器状态 ≈ 1.85 GB
+========================================================================
+step    0 | loss 10.9293 | lr 1.20e-04 | norm 27.11 |  21891.1 ms |      1497 tok/s | MFU   0.8%  (预热，不计入统计)
+step    5 | loss 8.0238 | lr 6.00e-04 | norm 1.69 |    293.6 ms |    111601 tok/s | MFU  57.9%  (预热，不计入统计)
+step   10 | loss 6.5487 | lr 5.84e-04 | norm 1.59 |    296.0 ms |    110721 tok/s | MFU  57.4%
+step   15 | loss 6.2258 | lr 5.37e-04 | norm 3.05 |    295.0 ms |    111065 tok/s | MFU  57.6%
+step   20 | loss 6.2727 | lr 4.65e-04 | norm 1.51 |    295.4 ms |    110929 tok/s | MFU  57.5%
+step   25 | loss 6.0908 | lr 3.77e-04 | norm 0.53 |    295.5 ms |    110905 tok/s | MFU  57.5%
+step   30 | loss 5.9699 | lr 2.83e-04 | norm 0.69 |    296.6 ms |    110487 tok/s | MFU  57.3%
+step   35 | loss 5.9366 | lr 1.95e-04 | norm 0.40 |    298.6 ms |    109725 tok/s | MFU  56.9%
+step   40 | loss 5.9460 | lr 1.23e-04 | norm 0.33 |    297.3 ms |    110221 tok/s | MFU  57.1%
+step   45 | loss 5.8972 | lr 7.63e-05 | norm 0.26 |    298.9 ms |    109622 tok/s | MFU  56.8%
+step   49 | loss 5.9063 | lr 6.07e-05 | norm 0.30 |    298.6 ms |    109742 tok/s | MFU  56.9%
+------------------------------------------------------------------------
+吞吐        110,340 tokens/s  （第 10 步之后的平均）
+MFU         57.2%
+峰值显存    11.94 GB  （其中参数+梯度+优化器状态约 1.85 GB，其余主要是激活值）
+最终 loss   5.9125  （最后 10 步平均，用来确认优化没有改变训练结果）
+结果已追加到 results.csv
+
+| 实验 | 显卡 | B | tokens/s | 相对 baseline | MFU | 峰值显存 (GB) | loss |
+|---|---|---:|---:|---:|---:|---:|---:|
+| run | NVIDIA GeForce RTX 4090 | 4 | 213,382 | 1.00x | 5.4% | 0.88 | 10.8551 |
+| 0_baseline_fp32 | NVIDIA GeForce RTX 4090 | 4 | 23,653 | 0.11x | 12.3% | 9.03 | 6.1279 |
+| 1_tf32 | NVIDIA GeForce RTX 4090 | 4 | 27,973 | 0.13x | 14.5% | 9.03 | 6.1151 |
+| 2_bf16 | NVIDIA GeForce RTX 4090 | 4 | 35,930 | 0.17x | 18.6% | 8.63 | 6.1566 |
+| 3_compile | NVIDIA GeForce RTX 4090 | 4 | 65,584 | 0.31x | 34.0% | 6.43 | 6.1351 |
+| 4_flash_attn | NVIDIA GeForce RTX 4090 | 4 | 84,502 | 0.40x | 43.8% | 4.16 | 6.1441 |
+| 5_vocab_50304 | NVIDIA GeForce RTX 4090 | 4 | 83,888 | 0.39x | 43.5% | 4.17 | 6.1081 |
+| 6_fused_adamw | NVIDIA GeForce RTX 4090 | 4 | 96,784 | 0.45x | 50.2% | 4.17 | 6.106 |
+| 7_big_batch | NVIDIA GeForce RTX 4090 | 16 | 119,443 | 0.56x | 61.9% | 11.47 | 5.9733 |
+| 8_big_batch_ckpt | NVIDIA GeForce RTX 4090 | 16 | 104,957 | 0.49x | 54.4% | 6.75 | 5.9803 |
+| 9_bigger_batch | NVIDIA GeForce RTX 4090 | 32 | **OOM** | | | | |
+| 10_bigger_batch_ckpt | NVIDIA GeForce RTX 4090 | 32 | 110,340 | 0.52x | 57.2% | 11.94 | 5.9125 |

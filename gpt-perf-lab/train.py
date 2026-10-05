@@ -38,6 +38,13 @@ Profiling：在任意命令后加 --profile
   --vocab_size  model.py 的 GPTConfig（改变 embedding 和输出层的大小）
 """
 
+# train.py：做一次实验
+# 读命令行开关，决定这次打开哪些优化
+# 创建模型、优化器和数据读取器
+# 训练 50 步。每一步依次是：取数据 → 前向 → 算 loss → 反向 → 更新参数，同时计时
+# 算出平均速度、MFU、峰值显存，追加一行到 results.csv
+
+
 import argparse
 import contextlib
 import csv

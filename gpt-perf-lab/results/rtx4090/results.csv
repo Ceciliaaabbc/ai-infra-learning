@@ -1,0 +1,12 @@
+time,tag,status,gpu,model,params_M,batch,seq_len,grad_accum,vocab,tf32,bf16,compile,attn,adamw,act_ckpt,tokens_per_s,mfu_pct,peak_mem_gb,static_mem_gb,final_loss
+2026-10-05 16:19:00,0_baseline_fp32,ok,NVIDIA GeForce RTX 4090,gpt2,124.4,4,1024,1,50257,False,False,False,naive,foreach,False,23653,12.26,9.03,1.85,6.1279
+2026-10-05 16:19:15,1_tf32,ok,NVIDIA GeForce RTX 4090,gpt2,124.4,4,1024,1,50257,True,False,False,naive,foreach,False,27973,14.5,9.03,1.85,6.1151
+2026-10-05 16:19:28,2_bf16,ok,NVIDIA GeForce RTX 4090,gpt2,124.4,4,1024,1,50257,True,True,False,naive,foreach,False,35930,18.62,8.63,1.85,6.1566
+2026-10-05 16:19:41,3_compile,ok,NVIDIA GeForce RTX 4090,gpt2,124.4,4,1024,1,50257,True,True,True,naive,foreach,False,65584,33.99,6.43,1.85,6.1351
+2026-10-05 16:20:16,4_flash_attn,ok,NVIDIA GeForce RTX 4090,gpt2,124.4,4,1024,1,50257,True,True,True,sdpa,foreach,False,84502,43.8,4.16,1.85,6.1441
+2026-10-05 16:20:44,5_vocab_50304,ok,NVIDIA GeForce RTX 4090,gpt2,124.5,4,1024,1,50304,True,True,True,sdpa,foreach,False,83888,43.49,4.17,1.85,6.1081
+2026-10-05 16:21:12,6_fused_adamw,ok,NVIDIA GeForce RTX 4090,gpt2,124.5,4,1024,1,50304,True,True,True,sdpa,fused,False,96784,50.17,4.17,1.85,6.106
+2026-10-05 16:21:24,7_big_batch,ok,NVIDIA GeForce RTX 4090,gpt2,124.5,16,1024,1,50304,True,True,True,sdpa,fused,False,119443,61.92,11.47,1.85,5.9733
+2026-10-05 16:21:57,8_big_batch_ckpt,ok,NVIDIA GeForce RTX 4090,gpt2,124.5,16,1024,1,50304,True,True,True,sdpa,fused,True,104957,54.41,6.75,1.85,5.9803
+2026-10-05 16:22:34,9_bigger_batch,OOM,NVIDIA GeForce RTX 4090,gpt2,124.5,32,1024,1,50304,True,True,True,sdpa,fused,False,,,,1.85,
+2026-10-05 16:23:00,10_bigger_batch_ckpt,ok,NVIDIA GeForce RTX 4090,gpt2,124.5,32,1024,1,50304,True,True,True,sdpa,fused,True,110340,57.2,11.94,1.85,5.9125
