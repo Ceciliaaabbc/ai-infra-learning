@@ -1,0 +1,4 @@
+__pycache__/
+# 只忽略实验时生成的工作文件；整理归档到 results/ 下的结果需要提交
+/results_ddp.csv
+/ddp.log

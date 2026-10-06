@@ -5,7 +5,7 @@
 | 项目 | 内容 | 状态 |
 |---|---|---|
 | [项目 0：GPT 单卡性能实验](gpt-perf-lab/) | 单卡训练 GPT-2 (124M)，逐项加优化，测量 tokens/s、MFU、显存 | 第一轮完成：RTX 4090 上吞吐提升 [5.05 倍](gpt-perf-lab/results/rtx4090/)，MFU 12% → 62% |
-| 项目 2：手写分布式训练 | DDP → ZeRO → Tensor Parallel | 计划中 |
+| [项目 2：多卡分布式训练](distributed-lab/) | DDP → ZeRO → Tensor Parallel | 阶段 1（数据并行）代码已完成，已在 CPU 上验证正确性，待上多卡 GPU 测速 |
 | 项目 1：Triton 算子 | 针对 profiling 发现的瓶颈写 fused kernel | 计划中 |
 | 项目 3：视频 DiT 训练系统 | VAE latent 缓存、高效数据加载、序列并行 | 计划中 |
 
